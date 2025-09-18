@@ -9,7 +9,7 @@ A web app to track your progress watching Naruto episodes! Users can log in, mar
 - Mobile-friendly, works as a PWA (add to iOS/Android home screen)
 
 ## Live Demo
-[View the app on Vercel](https://your-vercel-url.vercel.app)
+[View the app on Vercel](https://naruto-et.vercel.app)
 
 ## Getting Started
 
