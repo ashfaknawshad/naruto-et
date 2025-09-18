@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Naruto Shippuden Tracker</title>
+    <link href="https://fonts.googleapis.com/css2?family=Ninja+Naruto&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <img src="konoha.png" alt="Konoha Symbol" class="logo">
+        <h1>Naruto Shippuden Tracker</h1>
+        <div class="controls">
+            <div class="legend">
+                <span class="legend-item canon"></span> Canon
+                <span class="legend-item filler"></span> Filler
+            </div>
+            <div class="filter-container">
+                <label class="switch">
+                    <input type="checkbox" id="filler-toggle" checked>
+                    <span class="slider"></span>
+                </label>
+                <label for="filler-toggle">Show Filler</label>
+            </div>
+        </div>
+    </header>
+    <main id="episode-list-container"></main>
+    <script src="script.js"></script>
+</body>
+</html>

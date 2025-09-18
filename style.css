@@ -1,0 +1,140 @@
+/* Import a Naruto-style font (optional, but a nice touch) */
+@import url('https://fonts.cdnfonts.com/css/ninja-naruto');
+
+body {
+    background-color: #1a1a1a;
+    color: #ffffff;
+    font-family: 'Arial', sans-serif;
+    margin: 0;
+    padding: 20px;
+    text-align: center;
+}
+
+header {
+    margin-bottom: 2rem;
+}
+
+.logo {
+    width: 80px;
+    margin-bottom: 1rem;
+    animation: spin 10s linear infinite;
+}
+
+h1 {
+    font-family: 'Ninja Naruto', sans-serif;
+    font-size: 3rem;
+    color: #ff9900;
+    text-transform: uppercase;
+    letter-spacing: 3px;
+    text-shadow: 2px 2px 4px #000000;
+}
+
+.controls {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 30px;
+    margin-top: 1rem;
+}
+
+.legend {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.legend-item {
+    width: 20px;
+    height: 20px;
+    border-radius: 4px;
+}
+
+.legend-item.canon { background-color: #4A90E2; }
+.legend-item.filler { background-color: #8B572A; }
+
+.filter-container {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+#episode-list-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 15px;
+    max-width: 1200px;
+    margin: 2rem auto 0;
+}
+
+.episode-card {
+    border-radius: 8px;
+    padding: 15px;
+    cursor: pointer;
+    transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+    text-align: left;
+    border-left: 5px solid;
+}
+
+.episode-card.canon {
+    background-color: #2c3e50;
+    border-left-color: #4A90E2;
+}
+
+.episode-card.filler {
+    background-color: #3e3228;
+    border-left-color: #8B572A;
+}
+
+.episode-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+}
+
+.episode-card.watched {
+    opacity: 0.6;
+    background-image: linear-gradient(to right, rgba(0,0,0,0.4), rgba(0,0,0,0.4));
+}
+
+.episode-title {
+    font-weight: bold;
+    font-size: 1.1rem;
+}
+
+.episode-info {
+    font-size: 0.9rem;
+    color: #aaaaaa;
+    display: flex;
+    justify-content: space-between;
+}
+
+.watched-indicator {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    font-size: 2rem;
+    color: #ffc107;
+    text-shadow: 1px 1px 3px #000;
+    opacity: 0;
+    transform: scale(1.5);
+    transition: opacity 0.3s, transform 0.3s;
+}
+
+.episode-card.watched .watched-indicator {
+    opacity: 1;
+    transform: scale(1);
+}
+
+/* Toggle Switch CSS */
+.switch { position: relative; display: inline-block; width: 50px; height: 28px; }
+.switch input { opacity: 0; width: 0; height: 0; }
+.slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 34px; }
+.slider:before { position: absolute; content: ""; height: 20px; width: 20px; left: 4px; bottom: 4px; background-color: white; transition: .4s; border-radius: 50%; }
+input:checked + .slider { background-color: #ff9900; }
+input:focus + .slider { box-shadow: 0 0 1px #ff9900; }
+input:checked + .slider:before { transform: translateX(22px); }
+
+/* Animation for the logo */
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
