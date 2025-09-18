@@ -1,3 +1,9 @@
+// --- Supabase config ---
+// Replace with your own Supabase project URL and anon key
+const SUPABASE_URL = 'https://fqjzcsfnoolnfigwrlct.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZxanpjc2Zub29sbmZpZ3dybGN0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTgxNzgyNTAsImV4cCI6MjA3Mzc1NDI1MH0.EEvddR4NZuphqRuMvE4yfrb9zR3gmhT9_Fi15cGF69g';
+const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
 document.addEventListener('DOMContentLoaded', () => {
     // The complete list of Naruto Shippuden episodes with canon/filler classification.
     const episodes = [
@@ -505,38 +511,111 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const episodeListContainer = document.getElementById('episode-list-container');
     const fillerToggle = document.getElementById('filler-toggle');
+    const authSection = document.getElementById('auth-section');
+    const loginBtn = document.getElementById('login-btn');
+    const signupBtn = document.getElementById('signup-btn');
+    const logoutBtn = document.getElementById('logout-btn');
+    const authMessage = document.getElementById('auth-message');
 
-    // Load watched episodes from browser's local storage
-    let watchedEpisodes = new Set(JSON.parse(localStorage.getItem('watchedShippudenEpisodes')) || []);
+    let watchedEpisodes = new Set();
     let showFiller = fillerToggle.checked;
+    let currentUser = null;
 
-    const saveWatchedStatus = () => {
-        localStorage.setItem('watchedShippudenEpisodes', JSON.stringify([...watchedEpisodes]));
+    // --- Auth Handlers ---
+    loginBtn.onclick = async () => {
+        const email = document.getElementById('email').value;
+        const password = document.getElementById('password').value;
+        const { error } = await supabase.auth.signInWithPassword({ email, password });
+        if (error) {
+            authMessage.textContent = error.message;
+        } else {
+            authMessage.textContent = '';
+            await checkAuthAndLoad();
+        }
     };
 
-    const toggleWatched = (episodeId) => {
-        if (watchedEpisodes.has(episodeId)) {
-            watchedEpisodes.delete(episodeId);
+    signupBtn.onclick = async () => {
+        const email = document.getElementById('email').value;
+        const password = document.getElementById('password').value;
+        const { error } = await supabase.auth.signUp({ email, password });
+        if (error) {
+            authMessage.textContent = error.message;
         } else {
-            watchedEpisodes.add(episodeId);
+            authMessage.textContent = 'Check your email to confirm your signup!';
         }
-        saveWatchedStatus();
+    };
+
+    logoutBtn.onclick = async () => {
+        await supabase.auth.signOut();
+        currentUser = null;
+        watchedEpisodes = new Set();
+        showAuthUI();
         renderEpisodes();
     };
 
-    const renderEpisodes = () => {
+    function showAuthUI() {
+        authSection.style.display = '';
+        logoutBtn.style.display = 'none';
+    }
+
+    function showEpisodesUI() {
+        authSection.style.display = 'none';
+        logoutBtn.style.display = '';
+    }
+
+    async function checkAuthAndLoad() {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+            currentUser = user;
+            showEpisodesUI();
+            await loadWatchedEpisodes();
+        } else {
+            currentUser = null;
+            showAuthUI();
+        }
+        renderEpisodes();
+    }
+
+    async function loadWatchedEpisodes() {
+        watchedEpisodes = new Set();
+        if (!currentUser) return;
+        const { data, error } = await supabase
+            .from('watched_episodes')
+            .select('episode_id')
+            .eq('user_id', currentUser.id);
+        if (data) {
+            data.forEach(row => watchedEpisodes.add(Number(row.episode_id)));
+        }
+    }
+
+    async function toggleWatched(episodeId) {
+        if (!currentUser) return;
+        if (watchedEpisodes.has(episodeId)) {
+            // Remove from watched
+            await supabase
+                .from('watched_episodes')
+                .delete()
+                .eq('user_id', currentUser.id)
+                .eq('episode_id', episodeId);
+            watchedEpisodes.delete(episodeId);
+        } else {
+            // Add to watched
+            await supabase
+                .from('watched_episodes')
+                .insert({ user_id: currentUser.id, episode_id: episodeId });
+            watchedEpisodes.add(episodeId);
+        }
+        renderEpisodes();
+    }
+
+    function renderEpisodes() {
         episodeListContainer.innerHTML = '';
         const filteredEpisodes = episodes.filter(ep => showFiller || ep.type !== 'Filler');
-
         filteredEpisodes.forEach(episode => {
             const isWatched = watchedEpisodes.has(episode.id);
             const card = document.createElement('div');
-            // Add a 'position-relative' for the indicator
             card.className = `episode-card ${episode.type.toLowerCase().replace('/', '-')} ${isWatched ? 'watched' : ''}`;
-            card.style.position = 'relative'; 
-
-            card.addEventListener('click', () => toggleWatched(episode.id));
-
+            card.style.position = 'relative';
             card.innerHTML = `
                 <span class="watched-indicator">巻</span> 
                 <div class="episode-title">${episode.title}</div>
@@ -545,15 +624,22 @@ document.addEventListener('DOMContentLoaded', () => {
                     <span>${episode.type}</span>
                 </div>
             `;
+            if (currentUser) {
+                card.addEventListener('click', () => toggleWatched(episode.id));
+                card.style.cursor = 'pointer';
+            } else {
+                card.style.opacity = 0.5;
+                card.title = 'Login to track progress';
+            }
             episodeListContainer.appendChild(card);
         });
-    };
+    }
 
     fillerToggle.addEventListener('change', (e) => {
         showFiller = e.target.checked;
         renderEpisodes();
     });
 
-    // Initial render
-    renderEpisodes();
+    // On load, check auth and load watched episodes
+    checkAuthAndLoad();
 });
